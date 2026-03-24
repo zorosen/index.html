@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"/>
 <title>TuitionTrack</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 <script>
   tailwind.config = {
     darkMode:"class",
@@ -31,6 +36,18 @@
   }
 </script>
 <style>
+  /* Fix for the Status Bar and Navigation Bar overlap */
+  body { 
+      padding-top: env(safe-area-inset-top, 0px); 
+      padding-bottom: env(safe-area-inset-bottom, 0px); 
+  }
+  
+  /* Ensure the Custom Keypad doesn't push the layout */
+  .keypad-container { 
+      max-height: 40vh; 
+      overflow-y: auto; 
+  }
+
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;line-height:1;}
   .silk-gradient{background:linear-gradient(135deg,#4648d4 0%,#6063ee 100%);}
   .crimson-flare{box-shadow:0 0 15px rgba(186,26,26,.4);border:1.5px solid rgba(186,26,26,.5);}
@@ -44,7 +61,9 @@
   .scrollbar-hide::-webkit-scrollbar{display:none;}
   .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;}
   body{min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
-  .screen{display:none;flex-direction:column;min-height:100dvh;padding-bottom:90px;}
+  .screen{display:none;flex-direction:column;min-height:100dvh;padding-bottom:100px;}
+  header.sticky { padding-top: calc(1rem + env(safe-area-inset-top, 0px)) !important; }
+  nav.fixed.bottom-4 { bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important; }
   .screen.active{display:flex;animation:fadeUp .22s ease;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
   @keyframes pulse-subtle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.02)}}
@@ -239,22 +258,22 @@
     <!-- Fee keypad -->
     <section class="flex flex-col gap-3">
       <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-slate-400 ml-1">Monthly Fee (Rs.) *</label>
-      <div class="bg-surface-container-lowest dark:bg-[#1a1a24] rounded-[22px] p-5 shadow-sm dark:border dark:border-white/5 flex flex-col items-center gap-4">
-        <div class="text-5xl font-extrabold tracking-tighter text-on-surface dark:text-slate-100 tabular-nums" id="fee-display">0<span class="text-outline-variant dark:text-slate-700 text-4xl">.00</span></div>
+      <div class="bg-surface-container-lowest dark:bg-[#1a1a24] rounded-[22px] p-4 shadow-sm dark:border dark:border-white/5 flex flex-col items-center gap-3 keypad-container">
+        <div class="text-4xl font-extrabold tracking-tighter text-on-surface dark:text-slate-100 tabular-nums" id="fee-display">0<span class="text-outline-variant dark:text-slate-700 text-3xl">.00</span></div>
         <input id="f-fee" type="hidden" value="0"/>
-        <div class="grid grid-cols-3 gap-2 w-full">
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('1')">1</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('2')">2</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('3')">3</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('4')">4</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('5')">5</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('6')">6</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('7')">7</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('8')">8</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('9')">9</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('00')">00</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('0')">0</button>
-          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-error flex items-center justify-center active:bg-error-container dark:active:bg-red-900/30 active:scale-95 transition-all" onclick="keypadPress('back')">
+        <div class="grid grid-cols-3 gap-1.5 w-full">
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('1')">1</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('2')">2</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('3')">3</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('4')">4</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('5')">5</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('6')">6</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('7')">7</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('8')">8</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('9')">9</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('00')">00</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('0')">0</button>
+          <button type="button" class="py-3 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-error flex items-center justify-center active:bg-error-container dark:active:bg-red-900/30 active:scale-95 transition-all" onclick="keypadPress('back')">
             <span class="material-symbols-outlined">backspace</span>
           </button>
         </div>
@@ -265,7 +284,7 @@
       <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-slate-400 ml-1 block mb-2">Join Date *</label>
       <div class="neumorphic-inset dark:bg-[#1a1a24] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4">
         <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Date Joined</span>
-        <input id="f-join" type="date" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 text-sm [color-scheme:dark]"/>
+        <input id="f-join" type="text" readonly class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 text-sm" placeholder="Select Date"/>
       </div>
     </section>
     <!-- Reminders toggle (decorative) -->
@@ -283,8 +302,16 @@
         <div class="w-4 h-4 bg-white rounded-full translate-x-6"></div>
       </div>
     </div>
+    
+    <!-- Move the save button inside the scrollable main area to ensure it's always reachable -->
+    <div class="mt-4 mb-10">
+      <button onclick="saveStudent()" class="w-full silk-gradient py-4 rounded-[16px] text-white font-bold text-sm tracking-wide shadow-xl shadow-primary/40 active:scale-95 transition-transform flex items-center justify-center gap-2 group">
+        Register &amp; Enroll
+        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </button>
+    </div>
   </main>
-  <div class="fixed bottom-0 left-0 right-0 p-5 bg-background/80 dark:bg-[#0d0d12]/80 backdrop-blur-xl z-20">
+  <div class="fixed bottom-0 left-0 right-0 p-5 bg-background/80 dark:bg-[#0d0d12]/80 backdrop-blur-xl z-20 hidden">
     <div class="max-w-md mx-auto">
       <button onclick="saveStudent()" class="w-full silk-gradient py-4 rounded-[16px] text-white font-bold text-sm tracking-wide shadow-xl shadow-primary/40 active:scale-95 transition-transform flex items-center justify-center gap-2 group">
         Register &amp; Enroll
@@ -491,7 +518,7 @@
     <h3 class="font-black text-xl text-on-surface dark:text-slate-100 mb-5">💰 Record Payment</h3>
     <div class="neumorphic-inset dark:bg-[#2c2c3a] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4 mb-4">
       <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Month</span>
-      <input id="pay-month" type="month" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 text-sm [color-scheme:dark]"/>
+      <input id="pay-month" type="text" readonly class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 text-sm" placeholder="Select Month"/>
     </div>
     <div class="neumorphic-inset dark:bg-[#2c2c3a] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4 mb-5">
       <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Amount (Rs.)</span>
@@ -529,6 +556,25 @@ function initDarkMode(){
   }
 }
 
+function initDatePickers(){
+  flatpickr("#f-join", {
+    dateFormat: "Y-m-d",
+    defaultDate: todayStr(),
+    disableMobile: "true"
+  });
+  flatpickr("#pay-month", {
+    plugins: [
+      new monthSelectPlugin({
+        shorthand: true,
+        dateFormat: "Y-m",
+        altFormat: "F Y",
+        theme: "material_blue"
+      })
+    ],
+    disableMobile: "true"
+  });
+}
+
 function save(){
   localStorage.setItem('tt_students',JSON.stringify(students));
   localStorage.setItem('tt_attendance',JSON.stringify(attendance));
@@ -554,7 +600,11 @@ function showScreen(id){
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('active');
   if(id==='screen-dashboard') renderDashboard();
   if(id==='screen-students'){ buildFilterChips(); renderStudentList(); }
-  if(id==='screen-attendance'){ buildDateRibbon(); renderAttendance(); }
+  if(id==='screen-attendance'){ 
+    const saved=attendance[selectedDate]||{}; 
+    tempAttendance={...saved};
+    buildDateRibbon(); renderAttendance(); 
+  }
   if(id==='screen-fees') renderFees();
 }
 
@@ -875,11 +925,12 @@ function buildDateRibbon(){
 }
 function selectDateRibbon(ds){
   selectedDate=ds;
+  const saved=attendance[selectedDate]||{}; 
+  tempAttendance={...saved};
   buildDateRibbon(); renderAttendance();
 }
 function renderAttendance(){
   document.getElementById('att-session-label').textContent='Session: '+selectedDate;
-  const saved=attendance[selectedDate]||{}; tempAttendance={...saved};
   const list=document.getElementById('att-list');
   if(!students.length){
     list.innerHTML=`<div class="text-center py-16 text-on-surface-variant"><span class="material-symbols-outlined text-5xl block mb-2 opacity-30">calendar_month</span><p class="text-sm">No students yet.</p></div>`;
@@ -897,22 +948,19 @@ function renderAttendance(){
         <h3 class="font-bold text-sm ${status==='absent'?'text-on-error-container':status==='present'?'text-on-tertiary-fixed-variant':'text-on-surface'}">${s.name}</h3>
         <p class="text-xs text-on-surface-variant">${s.subject}${s.class?' · '+s.class:''}</p>
       </div>
-      <div class="relative w-24 h-10 rounded-full p-1 flex items-center cursor-pointer shrink-0 ${status==='present'?'bg-tertiary-fixed-dim':status==='absent'?'bg-error':'bg-surface-container'}" onclick="toggleAtt('${s.id}')">
-        <div class="absolute inset-0 flex justify-between px-3 items-center pointer-events-none ${status?'text-white':'opacity-40'}">
-          <span class="material-symbols-outlined text-[15px]">close</span>
-          <span class="material-symbols-outlined text-[15px]" style="${status==='present'?'font-variation-settings:&quot;FILL&quot; 1,&quot;wght&quot; 400,&quot;GRAD&quot; 0,&quot;opsz&quot; 24':''}">${status==='present'?'done_all':'check'}</span>
-        </div>
-        <div class="w-8 h-8 bg-white rounded-full shadow-md transition-transform duration-300 flex items-center justify-center ${status==='present'?'translate-x-14':status==='absent'?'translate-x-0':'translate-x-7'}">
-          <span class="material-symbols-outlined text-[16px] ${status==='present'?'text-tertiary':status==='absent'?'text-error':'text-primary'}">${status==='present'?'done_all':status==='absent'?'cancel':'drag_indicator'}</span>
-        </div>
+      <div class="flex gap-2 shrink-0">
+        <button onclick="setAtt('${s.id}', 'absent')" class="w-10 h-10 rounded-full flex items-center justify-center transition-all ${status==='absent' ? 'bg-error text-white shadow-lg shadow-error/30' : 'bg-surface-container-high dark:bg-[#2c2c3a] text-outline'}">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+        <button onclick="setAtt('${s.id}', 'present')" class="w-10 h-10 rounded-full flex items-center justify-center transition-all ${status==='present' ? 'bg-tertiary text-white shadow-lg shadow-tertiary/30' : 'bg-surface-container-high dark:bg-[#2c2c3a] text-outline'}">
+          <span class="material-symbols-outlined text-[20px]" style="${status==='present'?'font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24':''}">done</span>
+        </button>
       </div>
     </div>`;
   }).join('');
 }
-function toggleAtt(id){
-  const curr=tempAttendance[id]||'';
-  const next=curr==='present'?'absent':curr==='absent'?'':''+'present';
-  tempAttendance[id]=next||'present';
+function setAtt(id, status){
+  tempAttendance[id]=status;
   renderAttendance();
 }
 function markAllPresent(){ students.forEach(s=>{ tempAttendance[s.id]='present'; }); renderAttendance(); }
@@ -1016,6 +1064,7 @@ function showToast(msg){
 
 // ── INIT ──────────────────────────────────────────────────────────
 initDarkMode();
+initDatePickers();
 setGreeting();
 selectedDate=todayStr();
 renderDashboard();
