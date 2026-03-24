@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>TuitionTrack</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{
+      colors:{
+        "primary":"#4648d4","primary-container":"#6063ee","primary-fixed":"#e1e0ff","primary-fixed-dim":"#c0c1ff",
+        "on-primary":"#ffffff","on-primary-fixed":"#07006c","on-primary-fixed-variant":"#2f2ebe","inverse-primary":"#c0c1ff",
+        "secondary":"#575992","secondary-container":"#bdbefe","secondary-fixed":"#e1e0ff","secondary-fixed-dim":"#c0c1ff",
+        "on-secondary":"#ffffff","on-secondary-container":"#494b83","on-secondary-fixed":"#13144a","on-secondary-fixed-variant":"#404178",
+        "tertiary":"#006c49","tertiary-container":"#00885d","tertiary-fixed":"#6ffbbe","tertiary-fixed-dim":"#4edea3",
+        "on-tertiary":"#ffffff","on-tertiary-container":"#000703","on-tertiary-fixed":"#002113","on-tertiary-fixed-variant":"#005236",
+        "error":"#ba1a1a","error-container":"#ffdad6","on-error":"#ffffff","on-error-container":"#93000a",
+        "background":"#f8f9fa","on-background":"#191c1d",
+        "surface":"#f8f9fa","surface-dim":"#d9dadb","surface-bright":"#f8f9fa","surface-variant":"#e1e3e4",
+        "surface-container-lowest":"#ffffff","surface-container-low":"#f3f4f5","surface-container":"#edeeef",
+        "surface-container-high":"#e7e8e9","surface-container-highest":"#e1e3e4",
+        "on-surface":"#191c1d","on-surface-variant":"#464554","inverse-surface":"#2e3132","inverse-on-surface":"#f0f1f2",
+        "outline":"#767586","outline-variant":"#c7c4d7","surface-tint":"#494bd6",
+      },
+      fontFamily:{"headline":["Inter"],"body":["Inter"],"label":["Inter"]},
+      borderRadius:{"DEFAULT":"1rem","lg":"2rem","xl":"3rem","full":"9999px"},
+    }}
+  }
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;line-height:1;}
+  .silk-gradient{background:linear-gradient(135deg,#4648d4 0%,#6063ee 100%);}
+  .crimson-flare{box-shadow:0 0 15px rgba(186,26,26,.4);border:1.5px solid rgba(186,26,26,.5);}
+  .glass-card{background:rgba(255,255,255,.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+  .silk-border{border:1px solid rgba(255,255,255,.15);}
+  .ghost-border{border:1px solid rgba(199,196,215,.3);}
+  .ledger-stitch::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,transparent,transparent 4px,#c7c4d7 4px,#c7c4d7 8px);}
+  .neumorphic-inset{background:#f3f4f5;box-shadow:inset 4px 4px 8px #e1e3e4,inset -4px -4px 8px #ffffff;}
+  .plinth-input{border-top-left-radius:24px;border-top-right-radius:24px;border-bottom:2px solid #e1e3e4;}
+  .plinth-input:focus-within{border-bottom-color:#4648d4;}
+  .scrollbar-hide::-webkit-scrollbar{display:none;}
+  .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;}
+  body{min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
+  .screen{display:none;flex-direction:column;min-height:100dvh;padding-bottom:90px;}
+  .screen.active{display:flex;animation:fadeUp .22s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse-subtle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.02)}}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .animate-pulse-subtle{animation:pulse-subtle 3s cubic-bezier(.4,0,.6,1) infinite;}
+  .hm-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+  .nav-btn.active{background:#4648d4 !important;color:white !important;box-shadow:0 4px 14px rgba(70,72,212,.35);}
+  .nav-btn.active .material-symbols-outlined{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;}
+  .active-fee-tab{background:white !important;box-shadow:0 2px 8px rgba(0,0,0,.08);color:#4648d4 !important;}
+</style>
+</head>
+<body class="bg-background dark:bg-[#0d0d12] text-on-background dark:text-slate-100 font-body transition-colors duration-300">
+
+<!-- TOAST -->
+<div id="toast" class="fixed top-4 left-1/2 z-[300] bg-inverse-surface dark:bg-slate-800 text-inverse-on-surface dark:text-slate-100 px-5 py-3 rounded-full text-sm font-medium shadow-xl transition-transform duration-300 whitespace-nowrap pointer-events-none" style="transform:translateX(-50%) translateY(-80px)"></div>
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<div class="screen active" id="screen-dashboard">
+  <header class="sticky top-0 z-40 bg-surface/70 dark:bg-[#0d0d12]/80 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,.08)] px-6 py-4">
+    <div class="flex justify-between items-center max-w-md mx-auto">
+      <div>
+        <span class="block text-xs font-label uppercase tracking-widest text-secondary italic dark:text-slate-400">TuitionTrack</span>
+        <h1 id="greeting" class="font-bold tracking-tight text-indigo-600 dark:text-indigo-400">Good Morning 👋</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined" id="dark-mode-icon">light_mode</span>
+        </button>
+        <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <main class="max-w-md mx-auto px-6 pt-6 flex-1 overflow-y-auto pb-4">
+    <section class="mb-6">
+      <h2 class="text-[3rem] font-black tracking-tighter leading-none text-on-surface dark:text-slate-100">Intelligence</h2>
+      <p class="text-secondary dark:text-slate-400 text-sm opacity-80">Real-time attendance &amp; fee metrics</p>
+    </section>
+    <!-- Bento stats -->
+    <div class="space-y-4 mb-6">
+      <!-- Revenue Card -->
+      <div class="bg-surface-container-lowest dark:bg-[#1a1a24] rounded-[28px] p-6 shadow-sm border border-slate-100 dark:border-white/5 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-secondary dark:text-slate-500 mb-1">Total Revenue</p>
+          <div class="flex items-baseline gap-1">
+            <span id="stat-collected" class="text-3xl font-black text-on-surface dark:text-slate-100">Rs.0</span>
+            <span id="stat-revenue-total" class="text-sm text-outline dark:text-slate-500 font-medium">/ Rs.0</span>
+          </div>
+          <button onclick="showScreen('screen-fees')" class="mt-4 silk-gradient text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 active:scale-95 transition-transform">Recover Outstanding</button>
+        </div>
+        <div class="relative w-24 h-24">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="16" fill="none" class="stroke-slate-100 dark:stroke-slate-800" stroke-width="3"></circle>
+            <circle id="rev-progress" cx="18" cy="18" r="16" fill="none" class="stroke-primary" stroke-width="3" stroke-dasharray="100 100" stroke-linecap="round" style="transition: stroke-dasharray 1s ease"></circle>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span id="rev-pct" class="text-sm font-black text-on-surface dark:text-slate-100">0%</span>
+            <span class="text-[8px] font-bold text-outline dark:text-slate-500 uppercase tracking-tighter">Recovered</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Card -->
+      <div class="bg-surface-container-lowest dark:bg-[#1a1a24] rounded-[28px] p-6 shadow-sm border border-slate-100 dark:border-white/5 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-secondary dark:text-slate-500 mb-1">Attendance</p>
+          <div class="flex items-baseline gap-1">
+            <span id="stat-present" class="text-3xl font-black text-tertiary dark:text-tertiary-fixed-dim">0</span>
+            <span id="stat-total" class="text-sm text-outline dark:text-slate-500 font-medium">/ 0 Students</span>
+          </div>
+          <p class="text-xs text-outline dark:text-slate-500 mt-1">Checked-in today</p>
+        </div>
+        <div class="relative w-24 h-24">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="16" fill="none" class="stroke-slate-100 dark:stroke-slate-800" stroke-width="3"></circle>
+            <circle id="att-progress" cx="18" cy="18" r="16" fill="none" class="stroke-tertiary" stroke-width="3" stroke-dasharray="100 100" stroke-linecap="round" style="transition: stroke-dasharray 1s ease"></circle>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span id="att-pct-dash" class="text-sm font-black text-on-surface dark:text-slate-100">0%</span>
+            <span class="text-[8px] font-bold text-outline dark:text-slate-500 uppercase tracking-tighter">Today</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Overdue alerts -->
+    <div id="overdue-alerts" class="mb-4 space-y-2"></div>
+    <!-- Recent -->
+    <div>
+      <h3 class="text-[10px] font-bold uppercase tracking-widest text-outline dark:text-slate-500 mb-3">Recent Activity</h3>
+      <div id="recent-list">
+        <div class="text-center py-10 text-on-surface-variant dark:text-slate-400">
+          <span class="material-symbols-outlined text-5xl block mb-2 opacity-30">assignment</span>
+          <p class="text-sm">No activity yet. Add students to begin.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════ STUDENTS ══════════════ -->
+<div class="screen" id="screen-students">
+  <header class="sticky top-0 z-40 bg-surface/70 dark:bg-[#0d0d12]/80 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,.08)] px-6 py-4">
+    <div class="flex justify-between items-center max-w-md mx-auto">
+      <div>
+        <h2 class="text-lg font-bold text-on-surface dark:text-slate-100">Students</h2>
+        <p id="student-count-label" class="text-xs text-outline dark:text-slate-500">0 enrolled</p>
+      </div>
+      <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+    </div>
+  </header>
+  <div class="max-w-md mx-auto px-6 pt-4 pb-2 sticky top-[72px] z-30 bg-background/95 dark:bg-[#0d0d12]/95 backdrop-blur-sm">
+    <div class="plinth-input bg-surface-container-low dark:bg-[#1a1a24] flex items-center px-4 py-3">
+      <span class="material-symbols-outlined text-outline dark:text-slate-500 mr-3 text-[20px]">search</span>
+      <input id="student-search" class="bg-transparent border-none focus:ring-0 w-full text-sm placeholder:text-outline-variant dark:placeholder:text-slate-600 dark:text-slate-200" placeholder="Search students..." oninput="renderStudentList()"/>
+    </div>
+    <div class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide" id="subject-filter-chips"></div>
+  </div>
+  <main class="max-w-md mx-auto px-6 flex-1 overflow-y-auto space-y-2 pt-2 pb-4" id="student-list"></main>
+  <button onclick="showScreen('screen-add')" class="fixed bottom-24 right-6 w-14 h-14 rounded-[18px] silk-gradient text-white text-3xl shadow-xl shadow-indigo-200 dark:shadow-indigo-900/20 flex items-center justify-center z-50 active:scale-95 transition-transform">+</button>
+</div>
+
+<!-- ══════════════ ADD STUDENT ══════════════ -->
+<div class="screen" id="screen-add">
+  <header class="sticky top-0 z-40 bg-surface/70 dark:bg-[#0d0d12]/80 backdrop-blur-xl shadow-sm px-6 py-4">
+    <div class="flex items-center justify-between max-w-md mx-auto">
+      <button onclick="showScreen('screen-students')" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 active:scale-95 text-on-surface dark:text-slate-300">
+        <span class="material-symbols-outlined">arrow_back_ios_new</span>
+      </button>
+      <div class="text-center">
+        <h1 class="font-bold text-on-surface dark:text-slate-100">New Student</h1>
+        <p class="text-[10px] uppercase tracking-widest text-outline dark:text-slate-500">Onboarding</p>
+      </div>
+      <div class="w-10"></div>
+    </div>
+  </header>
+  <main class="max-w-md mx-auto px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-5 pb-32">
+    <!-- Stepper -->
+    <nav class="flex items-center justify-between px-4">
+      <div class="flex flex-col items-center gap-1">
+        <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-lg shadow-primary/20">1</div>
+        <span class="text-[10px] font-bold uppercase tracking-tighter text-primary dark:text-primary-fixed-dim">Identity</span>
+      </div>
+      <div class="flex-1 h-[2px] mx-2 bg-primary/20 dark:bg-primary/10 rounded-full"></div>
+      <div class="flex flex-col items-center gap-1 opacity-40">
+        <div class="w-8 h-8 rounded-full bg-surface-container-highest dark:bg-[#2c2c3a] flex items-center justify-center text-xs font-bold dark:text-slate-400">2</div>
+        <span class="text-[10px] font-bold uppercase tracking-tighter dark:text-slate-400">Course</span>
+      </div>
+      <div class="flex-1 h-[2px] mx-2 bg-surface-container-highest dark:bg-[#2c2c3a] rounded-full"></div>
+      <div class="flex flex-col items-center gap-1 opacity-40">
+        <div class="w-8 h-8 rounded-full bg-surface-container-highest dark:bg-[#2c2c3a] flex items-center justify-center text-xs font-bold dark:text-slate-400">3</div>
+        <span class="text-[10px] font-bold uppercase tracking-tighter dark:text-slate-400">Billing</span>
+      </div>
+    </nav>
+    <!-- Personal -->
+    <section class="flex flex-col gap-3">
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-slate-400 ml-1">Personal Details</label>
+      <div class="neumorphic-inset dark:bg-[#1a1a24] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4">
+        <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Full Name *</span>
+        <input id="f-name" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 placeholder:text-outline-variant/60 dark:placeholder:text-slate-700 text-sm" placeholder="e.g. Ram Sharma"/>
+      </div>
+      <div class="neumorphic-inset dark:bg-[#1a1a24] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4">
+        <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Parent Name</span>
+        <input id="f-parent" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 placeholder:text-outline-variant/60 dark:placeholder:text-slate-700 text-sm" placeholder="e.g. Hari Sharma"/>
+      </div>
+      <div class="neumorphic-inset dark:bg-[#1a1a24] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4">
+        <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Phone Number</span>
+        <input id="f-phone" type="tel" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 placeholder:text-outline-variant/60 dark:placeholder:text-slate-700 text-sm" placeholder="98XXXXXXXX"/>
+      </div>
+      <div class="neumorphic-inset dark:bg-[#1a1a24] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4">
+        <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Class / Grade</span>
+        <input id="f-class" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 placeholder:text-outline-variant/60 dark:placeholder:text-slate-700 text-sm" placeholder="e.g. Class 10, SEE"/>
+      </div>
+    </section>
+    <section class="flex flex-col gap-3">
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-slate-400 ml-1">Subject Assignment *</label>
+      <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-6 px-6" id="subject-chips">
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Mathematics')">Mathematics</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Physics')">Physics</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Chemistry')">Chemistry</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Biology')">Biology</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'English')">English</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Nepali')">Nepali</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Science')">Science</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Accounts')">Accounts</button>
+        <button class="shrink-0 px-5 py-2.5 rounded-full bg-surface-container-highest dark:bg-[#1a1a24] text-on-surface-variant dark:text-slate-400 text-sm font-bold transition-all active:scale-95" onclick="selectSubject(this,'Computer')">Computer</button>
+      </div>
+      <input id="f-subject" class="hidden" readonly/>
+    </section>
+    <!-- Fee keypad -->
+    <section class="flex flex-col gap-3">
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-slate-400 ml-1">Monthly Fee (Rs.) *</label>
+      <div class="bg-surface-container-lowest dark:bg-[#1a1a24] rounded-[22px] p-5 shadow-sm dark:border dark:border-white/5 flex flex-col items-center gap-4">
+        <div class="text-5xl font-extrabold tracking-tighter text-on-surface dark:text-slate-100 tabular-nums" id="fee-display">0<span class="text-outline-variant dark:text-slate-700 text-4xl">.00</span></div>
+        <input id="f-fee" type="hidden" value="0"/>
+        <div class="grid grid-cols-3 gap-2 w-full">
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('1')">1</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('2')">2</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('3')">3</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('4')">4</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('5')">5</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('6')">6</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('7')">7</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('8')">8</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('9')">9</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('00')">00</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 font-bold text-lg active:bg-surface-variant dark:active:bg-slate-700 active:scale-95 transition-all" onclick="keypadPress('0')">0</button>
+          <button class="p-4 rounded-[12px] bg-surface-container-low dark:bg-[#2c2c3a] text-error flex items-center justify-center active:bg-error-container dark:active:bg-red-900/30 active:scale-95 transition-all" onclick="keypadPress('back')">
+            <span class="material-symbols-outlined">backspace</span>
+          </button>
+        </div>
+      </div>
+    </section>
+    <!-- Join date -->
+    <section>
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-slate-400 ml-1 block mb-2">Join Date *</label>
+      <div class="neumorphic-inset dark:bg-[#1a1a24] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4">
+        <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Date Joined</span>
+        <input id="f-join" type="date" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 text-sm [color-scheme:dark]"/>
+      </div>
+    </section>
+    <!-- Reminders toggle (decorative) -->
+    <div class="flex items-center justify-between p-4 bg-surface-container-low dark:bg-[#1a1a24] rounded-[16px] dark:border dark:border-white/5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-tertiary/10 dark:bg-tertiary/20 flex items-center justify-center text-tertiary dark:text-tertiary-fixed-dim">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">notifications_active</span>
+        </div>
+        <div>
+          <p class="text-sm font-bold dark:text-slate-200">Auto-Reminders</p>
+          <p class="text-[10px] text-outline dark:text-slate-500">30-day fee alerts</p>
+        </div>
+      </div>
+      <div class="w-12 h-6 bg-primary rounded-full relative flex items-center px-1">
+        <div class="w-4 h-4 bg-white rounded-full translate-x-6"></div>
+      </div>
+    </div>
+  </main>
+  <div class="fixed bottom-0 left-0 right-0 p-5 bg-background/80 dark:bg-[#0d0d12]/80 backdrop-blur-xl z-20">
+    <div class="max-w-md mx-auto">
+      <button onclick="saveStudent()" class="w-full silk-gradient py-4 rounded-[16px] text-white font-bold text-sm tracking-wide shadow-xl shadow-primary/40 active:scale-95 transition-transform flex items-center justify-center gap-2 group">
+        Register &amp; Enroll
+        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div id="report-modal" class="fixed inset-0 bg-black/50 z-[200] hidden items-center justify-center p-6">
+  <div class="bg-surface-container-lowest dark:bg-[#1a1a24] rounded-[28px] w-full max-w-md p-6 shadow-2xl relative overflow-hidden">
+    <div class="absolute top-0 left-0 right-0 h-24 silk-gradient opacity-10"></div>
+    <div class="relative z-10">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h3 class="font-black text-2xl text-on-surface dark:text-slate-100">Report Card</h3>
+          <p id="report-month" class="text-xs font-bold text-primary dark:text-primary-fixed-dim uppercase tracking-widest"></p>
+        </div>
+        <button onclick="closeReportModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-high dark:bg-[#2c2c3a] text-on-surface dark:text-slate-300">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      
+      <div id="report-content" class="space-y-6">
+        <!-- Dynamic content -->
+      </div>
+
+      <div class="mt-8 pt-6 border-t dark:border-white/5 flex gap-3">
+        <button onclick="window.print()" class="flex-1 bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-sm">print</span> Print
+        </button>
+        <button onclick="closeReportModal()" class="flex-1 silk-gradient text-white py-3 rounded-xl font-bold text-sm">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ STUDENT DETAIL ══════════════ -->
+<div class="screen" id="screen-detail">
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-surface/70 dark:bg-[#0d0d12]/80 backdrop-blur-xl shadow-sm px-6 py-4 flex justify-between items-center">
+    <button onclick="showScreen('screen-students')" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 active:scale-95 text-on-surface dark:text-slate-300">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <h1 class="font-bold italic text-indigo-600 dark:text-indigo-400">TuitionTrack</h1>
+    <button onclick="deleteStudent()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-error active:scale-95">
+      <span class="material-symbols-outlined">delete</span>
+    </button>
+  </nav>
+  <!-- Hero -->
+  <header class="relative w-full pt-20 pb-6 px-6 overflow-hidden" id="detail-hero-bg">
+    <div class="absolute inset-0 opacity-20" id="detail-hero-pattern"></div>
+    <h2 id="detail-name" class="text-3xl font-black tracking-tight text-on-surface dark:text-slate-100 leading-tight"></h2>
+    <p id="detail-sub" class="text-on-surface-variant dark:text-slate-400 text-sm mt-1"></p>
+  </header>
+  <main class="max-w-md mx-auto px-6 space-y-4 flex-1 overflow-y-auto pb-6">
+    <!-- Mini stats -->
+    <div class="grid grid-cols-3 gap-3" id="detail-mini-stats"></div>
+    <!-- Bio -->
+    <div class="glass-card dark:bg-[#1a1a24] silk-border dark:border-white/5 rounded-[20px] p-5 shadow-[0_8px_24px_rgba(0,0,0,.06)]">
+      <h3 class="text-[10px] font-bold uppercase tracking-widest text-secondary dark:text-slate-400 mb-3">Bio</h3>
+      <div id="detail-bio" class="divide-y divide-outline-variant/20 dark:divide-white/5"></div>
+    </div>
+    <!-- Attendance Pulse -->
+    <div class="glass-card dark:bg-[#1a1a24] silk-border dark:border-white/5 rounded-[20px] p-5 shadow-[0_8px_24px_rgba(0,0,0,.06)]">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <h3 class="font-bold text-on-surface dark:text-slate-100">Attendance Pulse</h3>
+          <p class="text-xs text-on-surface-variant dark:text-slate-400">This month</p>
+        </div>
+        <button onclick="openReportModal()" class="text-[10px] font-bold text-primary dark:text-primary-fixed-dim bg-primary/10 dark:bg-primary/20 px-3 py-1.5 rounded-full active:scale-95 transition-transform flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">analytics</span> Report
+        </button>
+      </div>
+      <div class="w-full bg-surface-variant dark:bg-slate-800 h-2 rounded-full mb-4 overflow-hidden flex justify-between items-center">
+        <div id="detail-att-bar" class="h-full rounded-full bg-primary transition-all duration-700" style="width:0%"></div>
+      </div>
+      <div class="flex justify-between items-center mb-4">
+        <span id="detail-att-pct" class="font-black text-primary dark:text-primary-fixed-dim text-lg">0%</span>
+        <span class="text-[10px] text-on-surface-variant">Monthly Avg</span>
+      </div>
+      <div class="grid grid-cols-7 gap-1 justify-items-center" id="detail-heatmap"></div>
+      <div class="flex gap-4 mt-3">
+        <span class="flex items-center gap-1 text-[10px] text-on-surface-variant dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-full bg-tertiary-fixed-dim inline-block"></span>Present</span>
+        <span class="flex items-center gap-1 text-[10px] text-on-surface-variant dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-full bg-error/40 inline-block"></span>Absent</span>
+        <span class="flex items-center gap-1 text-[10px] text-on-surface-variant dark:text-slate-400"><span class="w-2.5 h-2.5 rounded-full bg-surface-variant dark:bg-slate-800 inline-block"></span>No data</span>
+      </div>
+    </div>
+    <!-- Fee Ledger -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-on-surface dark:text-slate-100">Fee Ledger</h3>
+        <button onclick="openPayModal()" class="flex items-center gap-1 text-xs font-bold text-primary dark:text-primary-fixed-dim bg-primary/10 dark:bg-primary/20 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
+          <span class="material-symbols-outlined text-sm">add</span> Record
+        </button>
+      </div>
+      <div class="relative pl-8 space-y-3 ledger-stitch dark:before:opacity-20" id="detail-fees"></div>
+    </div>
+    <!-- Quick actions -->
+    <div class="grid grid-cols-3 gap-3 pb-4">
+      <button id="detail-call-btn" class="flex flex-col items-center justify-center p-4 bg-surface-container-highest dark:bg-[#1a1a24] rounded-[20px] ghost-border dark:border-white/5 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800/50 active:scale-95 transition-all text-on-surface dark:text-slate-200">
+        <span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim mb-1">call</span>
+        <span class="text-[10px] font-bold">Call</span>
+      </button>
+      <button id="detail-sms-btn" class="flex flex-col items-center justify-center p-4 bg-surface-container-highest dark:bg-[#1a1a24] rounded-[20px] ghost-border dark:border-white/5 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800/50 active:scale-95 transition-all text-on-surface dark:text-slate-200">
+        <span class="material-symbols-outlined text-tertiary dark:text-tertiary-fixed-dim mb-1">chat</span>
+        <span class="text-[10px] font-bold">SMS</span>
+      </button>
+      <button onclick="openPayModal()" class="flex flex-col items-center justify-center p-4 bg-surface-container-highest dark:bg-[#1a1a24] rounded-[20px] ghost-border dark:border-white/5 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800/50 active:scale-95 transition-all text-on-surface dark:text-slate-200">
+        <span class="material-symbols-outlined text-secondary dark:text-secondary-fixed-dim mb-1">payments</span>
+        <span class="text-[10px] font-bold">Fee</span>
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════ ATTENDANCE ══════════════ -->
+<div class="screen" id="screen-attendance">
+  <header class="sticky top-0 z-40 bg-surface/70 dark:bg-[#0d0d12]/80 backdrop-blur-xl shadow-sm px-6 py-4">
+    <div class="flex justify-between items-center max-w-md mx-auto">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-primary dark:text-primary-fixed-dim">Morning Session</p>
+        <h2 class="text-2xl font-extrabold tracking-tight text-on-surface dark:text-slate-100">Roll Call</h2>
+      </div>
+      <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+    </div>
+  </header>
+  <!-- Date ribbon -->
+  <div class="max-w-md mx-auto px-6 pt-4 pb-2 overflow-x-auto">
+    <div class="flex gap-3 scrollbar-hide pb-1" id="date-ribbon"></div>
+  </div>
+  <!-- Bulk action bar -->
+  <div class="max-w-md mx-auto px-6 pb-3 flex items-center justify-between">
+    <p class="text-xs text-on-surface-variant dark:text-slate-400 font-medium" id="att-session-label"></p>
+    <button onclick="markAllPresent()" class="text-xs font-bold text-white bg-tertiary dark:bg-tertiary-container px-4 py-2 rounded-full active:scale-95 transition-transform flex items-center gap-1">
+      <span class="material-symbols-outlined text-sm">done_all</span> All Present
+    </button>
+  </div>
+  <main class="max-w-md mx-auto px-6 flex-1 overflow-y-auto space-y-3 pb-24" id="att-list"></main>
+  <div class="fixed bottom-[80px] left-0 right-0 px-6 z-20">
+    <div class="max-w-md mx-auto">
+      <button onclick="saveAttendance()" class="w-full silk-gradient py-4 rounded-[16px] text-white font-bold text-sm shadow-xl shadow-primary/30 active:scale-95 transition-transform flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">save</span> Save Attendance
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FEES ══════════════ -->
+<div class="screen" id="screen-fees">
+  <header class="sticky top-0 z-40 bg-surface/70 dark:bg-[#0d0d12]/80 backdrop-blur-xl shadow-sm px-6 py-4">
+    <div class="flex justify-between items-center max-w-md mx-auto">
+      <div>
+        <h2 class="text-lg font-bold text-on-surface dark:text-slate-100">Fee Manager</h2>
+        <div class="flex gap-4 mt-0.5">
+          <span id="fee-collected-label" class="text-xs font-bold text-tertiary dark:text-tertiary-fixed-dim">Collected: Rs.0</span>
+          <span id="fee-due-label" class="text-xs font-bold text-error dark:text-red-400">Due: Rs.0</span>
+        </div>
+      </div>
+      <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 text-slate-500 dark:text-slate-400">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+    </div>
+  </header>
+  <div class="max-w-md mx-auto px-6 pt-5">
+    <h2 class="text-[2.5rem] font-black tracking-tighter leading-none text-on-surface dark:text-slate-100 mb-4">Fee Manager</h2>
+    <nav class="flex p-1.5 bg-surface-container-low dark:bg-[#1a1a24] rounded-[14px] mb-5">
+      <button class="flex-1 py-2.5 text-sm font-bold rounded-[10px] transition-all fee-tab-btn active-fee-tab" onclick="setFeeTab('all',this)">All</button>
+      <button class="flex-1 py-2.5 text-sm font-bold rounded-[10px] transition-all fee-tab-btn text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400" onclick="setFeeTab('due',this)">Pending</button>
+      <button class="flex-1 py-2.5 text-sm font-bold rounded-[10px] transition-all fee-tab-btn text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400" onclick="setFeeTab('paid',this)">Paid</button>
+    </nav>
+  </div>
+  <main class="max-w-md mx-auto px-6 flex-1 overflow-y-auto pb-4 space-y-3" id="fee-list"></main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="fixed bottom-4 left-0 right-0 z-50 flex justify-center px-4">
+  <div class="bg-white/70 dark:bg-slate-900/80 backdrop-blur-[20px] w-[92%] max-w-md rounded-[32px] border border-white/10 dark:border-white/5 shadow-[0_20px_40px_rgba(0,0,0,.12)] flex justify-around items-center py-2 px-1">
+    <button id="nav-dashboard" class="nav-btn flex flex-col items-center justify-center p-3 rounded-full transition-all text-slate-400 dark:text-slate-500 active" onclick="showScreen('screen-dashboard')">
+      <span class="material-symbols-outlined text-[22px]">grid_view</span>
+      <span class="text-[8px] font-bold uppercase tracking-widest mt-0.5">Dashboard</span>
+    </button>
+    <button id="nav-students" class="nav-btn flex flex-col items-center justify-center p-3 rounded-full transition-all text-slate-400 dark:text-slate-500" onclick="showScreen('screen-students')">
+      <span class="material-symbols-outlined text-[22px]">group</span>
+      <span class="text-[8px] font-bold uppercase tracking-widest mt-0.5">Students</span>
+    </button>
+    <button id="nav-attendance" class="nav-btn flex flex-col items-center justify-center p-3 rounded-full transition-all text-slate-400 dark:text-slate-500" onclick="showScreen('screen-attendance')">
+      <span class="material-symbols-outlined text-[22px]">calendar_month</span>
+      <span class="text-[8px] font-bold uppercase tracking-widest mt-0.5">Attendance</span>
+    </button>
+    <button id="nav-fees" class="nav-btn flex flex-col items-center justify-center p-3 rounded-full transition-all text-slate-400 dark:text-slate-500" onclick="showScreen('screen-fees')">
+      <span class="material-symbols-outlined text-[22px]">payments</span>
+      <span class="text-[8px] font-bold uppercase tracking-widest mt-0.5">Fees</span>
+    </button>
+  </div>
+</nav>
+
+<!-- PAYMENT MODAL -->
+<div id="pay-modal" class="fixed inset-0 bg-black/50 z-[200] hidden items-end justify-center">
+  <div class="bg-surface-container-lowest dark:bg-[#1a1a24] rounded-[28px_28px_0_0] w-full max-w-md p-6 pb-10" style="animation:slideUp .2s ease">
+    <div class="w-10 h-1 bg-outline-variant dark:bg-slate-800 rounded-full mx-auto mb-5"></div>
+    <h3 class="font-black text-xl text-on-surface dark:text-slate-100 mb-5">💰 Record Payment</h3>
+    <div class="neumorphic-inset dark:bg-[#2c2c3a] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4 mb-4">
+      <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Month</span>
+      <input id="pay-month" type="month" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 text-sm [color-scheme:dark]"/>
+    </div>
+    <div class="neumorphic-inset dark:bg-[#2c2c3a] dark:shadow-none dark:border dark:border-white/5 rounded-[16px] p-4 mb-5">
+      <span class="text-[10px] font-bold text-outline dark:text-slate-500 block mb-1 uppercase tracking-tighter">Amount (Rs.)</span>
+      <input id="pay-amount" type="number" class="bg-transparent border-none p-0 w-full text-on-surface dark:text-slate-100 font-medium focus:ring-0 text-sm placeholder:text-slate-600" placeholder="Enter amount"/>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="savePayment()" class="flex-1 silk-gradient text-white py-4 rounded-[14px] font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-primary/30">Confirm</button>
+      <button onclick="closePayModal()" class="flex-1 bg-surface-container-low dark:bg-[#2c2c3a] text-on-surface dark:text-slate-200 py-4 rounded-[14px] font-bold text-sm active:scale-95 transition-transform">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+let students = JSON.parse(localStorage.getItem('tt_students')||'[]');
+let attendance = JSON.parse(localStorage.getItem('tt_attendance')||'{}');
+let currentStudentId = null;
+let feeTab = 'all';
+let tempAttendance = {};
+let selectedDate = todayStr();
+let feeStr = '0';
+let activeSubjectFilter = '';
+
+function toggleDarkMode(){
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('tt_dark_mode', isDark);
+  document.getElementById('dark-mode-icon').textContent = isDark ? 'dark_mode' : 'light_mode';
+}
+
+function initDarkMode(){
+  const isDark = localStorage.getItem('tt_dark_mode') === 'true';
+  if(isDark) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('dark-mode-icon').textContent = 'dark_mode';
+  }
+}
+
+function save(){
+  localStorage.setItem('tt_students',JSON.stringify(students));
+  localStorage.setItem('tt_attendance',JSON.stringify(attendance));
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function monthKey(){ return new Date().toISOString().slice(0,7); }
+
+const subColors = {
+  'Mathematics':'#4648d4','Physics':'#3B82F6','Chemistry':'#EC4899',
+  'Biology':'#22C55E','English':'#F59E0B','Nepali':'#EF4444',
+  'Science':'#10B981','Accounts':'#F97316','Computer':'#06B6D4','Social Studies':'#8B5CF6'
+};
+function subColor(s){ return subColors[s]||'#767586'; }
+function initials(n){ return n.trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
+
+// ── NAV ──────────────────────────────────────────────────────────
+const navMap={'screen-dashboard':'nav-dashboard','screen-students':'nav-students','screen-attendance':'nav-attendance','screen-fees':'nav-fees'};
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(navMap[id]) document.getElementById(navMap[id]).classList.add('active');
+  if(id==='screen-dashboard') renderDashboard();
+  if(id==='screen-students'){ buildFilterChips(); renderStudentList(); }
+  if(id==='screen-attendance'){ buildDateRibbon(); renderAttendance(); }
+  if(id==='screen-fees') renderFees();
+}
+
+// ── GREETING ─────────────────────────────────────────────────────
+function setGreeting(){
+  const h=new Date().getHours();
+  document.getElementById('greeting').textContent=h<12?'Good Morning 🌤':h<17?'Good Afternoon ☀️':'Good Evening 🌙';
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────
+function renderDashboard(){
+  const mKey=monthKey();
+  const totalStudents = students.length;
+  document.getElementById('stat-total').textContent=totalStudents;
+  
+  const todayAtt=attendance[todayStr()]||{};
+  const presentToday = Object.values(todayAtt).filter(v=>v==='present').length;
+  document.getElementById('stat-present').textContent=presentToday;
+  
+  const attPct = totalStudents > 0 ? Math.round(presentToday/totalStudents*100) : 0;
+  document.getElementById('att-pct-dash').textContent = attPct + '%';
+  document.getElementById('att-progress').style.strokeDasharray = `${attPct} 100`;
+
+  let collected=0, totalExpected=0;
+  const overdueList=[];
+  students.forEach(s=>{
+    totalExpected += s.feeAmount;
+    const paid=s.fees?.find(f=>f.month===mKey&&f.paid);
+    if(paid) collected+=paid.amount||s.feeAmount;
+    else{
+      const days=Math.floor((new Date()-new Date(s.joinDate))/86400000);
+      if(days>=30) overdueList.push({s,days});
+    }
+  });
+  
+  document.getElementById('stat-collected').textContent='Rs.'+collected;
+  document.getElementById('stat-revenue-total').textContent='/ Rs.'+totalExpected;
+  
+  const revPct = totalExpected > 0 ? Math.round(collected/totalExpected*100) : 0;
+  document.getElementById('rev-pct').textContent = revPct + '%';
+  document.getElementById('rev-progress').style.strokeDasharray = `${revPct} 100`;
+
+  document.getElementById('overdue-alerts').innerHTML=overdueList.slice(0,2).map(({s,days})=>`
+    <div class="bg-error-container/30 dark:bg-red-900/20 border-l-4 border-error rounded-[16px] p-4 flex items-start gap-3 mb-2">
+      <span class="material-symbols-outlined text-error mt-0.5" style="font-size:18px">warning</span>
+      <div>
+        <p class="font-bold text-sm text-on-surface dark:text-slate-100">${s.name}</p>
+        <p class="text-xs text-error">${days} days past 30-day cycle — Remind Parent</p>
+      </div>
+    </div>`).join('');
+  const entries=Object.entries(attendance).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,3);
+  document.getElementById('recent-list').innerHTML=entries.length?entries.map(([date,dayAtt])=>{
+    const p=Object.values(dayAtt).filter(v=>v==='present').length,t=Object.keys(dayAtt).length;
+    return `<div class="bg-surface-container-lowest rounded-[20px] p-4 shadow-sm silk-border flex justify-between items-center mb-2">
+      <div><p class="font-bold text-sm">${date}</p><p class="text-xs text-on-surface-variant">Attendance recorded</p></div>
+      <div class="text-right"><span class="font-black text-primary text-lg">${p}/${t}</span><p class="text-[10px] text-tertiary font-bold">PRESENT</p></div>
+    </div>`;
+  }).join(''):`<div class="text-center py-8 text-on-surface-variant"><span class="material-symbols-outlined text-4xl block mb-2 opacity-30">assignment</span><p class="text-sm">No activity yet.</p></div>`;
+}
+
+// ── STUDENT LIST ─────────────────────────────────────────────────
+function buildFilterChips(){
+  const subjects=[...new Set(students.map(s=>s.subject).filter(Boolean))];
+  document.getElementById('subject-filter-chips').innerHTML=
+    `<button class="px-4 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all ${!activeSubjectFilter?'bg-primary text-white':'bg-surface-container-highest text-on-surface-variant ghost-border'}" onclick="setSubjectFilter('',this)">All</button>`
+    +subjects.map(s=>`<button class="px-4 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all ${activeSubjectFilter===s?'bg-primary text-white':'bg-surface-container-highest text-on-surface-variant ghost-border'}" onclick="setSubjectFilter('${s}',this)">${s}</button>`).join('');
+}
+function setSubjectFilter(val){ activeSubjectFilter=val; buildFilterChips(); renderStudentList(); }
+function renderStudentList(){
+  const q=(document.getElementById('student-search')?.value||'').toLowerCase();
+  const mKey=monthKey();
+  document.getElementById('student-count-label').textContent=students.length+' enrolled';
+  const filtered=students.filter(s=>(!activeSubjectFilter||s.subject===activeSubjectFilter)&&
+    (s.name.toLowerCase().includes(q)||s.subject?.toLowerCase().includes(q)||s.parent?.toLowerCase().includes(q)));
+  const list=document.getElementById('student-list');
+  if(!filtered.length){
+    list.innerHTML=`<div class="text-center py-16 text-on-surface-variant"><span class="material-symbols-outlined text-5xl block mb-2 opacity-30">school</span><p class="text-sm">${!students.length?'No students yet. Tap + to add.':'No results.'}</p></div>`;
+    return;
+  }
+  list.innerHTML=filtered.map(s=>{
+    const paid=s.fees?.find(f=>f.month===mKey&&f.paid);
+    const color=subColor(s.subject);
+    const days=Math.floor((new Date()-new Date(s.joinDate))/86400000);
+    const overdue=!paid&&days>=30;
+    return `<div class="relative flex items-center p-4 bg-surface-container-lowest rounded-[24px] silk-border shadow-sm active:scale-[.98] transition-all cursor-pointer" onclick="openDetail('${s.id}')">
+      <div class="relative shrink-0">
+        <div class="w-14 h-14 rounded-full p-[3px]" style="border:2px solid ${overdue?'#ba1a1a':paid?'#4edea3':'#c7c4d7'}">
+          <div class="w-full h-full rounded-full flex items-center justify-center font-black text-base text-white" style="background:${color}">${initials(s.name)}</div>
+        </div>
+        ${overdue?`<span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-error border-2 border-white"></span>`:''}
+      </div>
+      <div class="ml-4 flex-grow min-w-0">
+        <div class="flex items-center gap-2">
+          <h3 class="font-bold text-on-surface text-base">${s.name}</h3>
+          ${overdue?`<span class="w-2 h-2 rounded-full bg-error animate-pulse shrink-0"></span>`:''}
+        </div>
+        <div class="flex items-center gap-2 mt-1 flex-wrap">
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider" style="background:${color}22;color:${color}">${s.subject||'—'}</span>
+          <span class="text-xs text-on-surface-variant">${s.class||''}</span>
+          ${overdue?`<span class="text-error font-bold text-xs">Fee Overdue</span>`:''}
+        </div>
+      </div>
+      <span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+    </div>`;
+  }).join('');
+}
+
+// ── ADD STUDENT ──────────────────────────────────────────────────
+function selectSubject(el,val){
+  document.getElementById('f-subject').value=val;
+  document.querySelectorAll('#subject-chips button').forEach(b=>{
+    b.className='shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95 '+(b===el?'bg-primary text-white shadow-md shadow-primary/30':'bg-surface-container-highest text-on-surface-variant');
+  });
+}
+function keypadPress(k){
+  if(k==='back') feeStr=feeStr.length>1?feeStr.slice(0,-1):'0';
+  else if(k==='00') feeStr=feeStr==='0'?'0':feeStr+'00';
+  else{ feeStr=feeStr==='0'?k:feeStr+k; if(feeStr.length>7) feeStr=feeStr.slice(0,-1); }
+  document.getElementById('f-fee').value=feeStr;
+  document.getElementById('fee-display').innerHTML=feeStr+'<span class="text-outline-variant text-4xl">.00</span>';
+}
+function saveStudent(){
+  const name=document.getElementById('f-name').value.trim();
+  const subject=document.getElementById('f-subject').value;
+  const joinDate=document.getElementById('f-join').value;
+  const fee=parseFloat(document.getElementById('f-fee').value);
+  if(!name||!subject||!joinDate||!fee){ showToast('⚠️ Fill all required fields'); return; }
+  students.push({id:uid(),name,parent:document.getElementById('f-parent').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),subject,
+    class:document.getElementById('f-class').value.trim(),feeAmount:fee,joinDate,fees:[]});
+  save();
+  ['f-name','f-parent','f-phone','f-class','f-join'].forEach(i=>document.getElementById(i).value='');
+  feeStr='0'; document.getElementById('f-fee').value='0';
+  document.getElementById('fee-display').innerHTML='0<span class="text-outline-variant text-4xl">.00</span>';
+  document.querySelectorAll('#subject-chips button').forEach(b=>b.className='shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95 bg-surface-container-highest text-on-surface-variant');
+  document.getElementById('f-subject').value='';
+  showToast('✅ Student registered!'); showScreen('screen-students');
+}
+
+// ── DETAIL ───────────────────────────────────────────────────────
+function openDetail(id){
+  currentStudentId=id;
+  const s=students.find(st=>st.id===id); if(!s) return;
+  const color=subColor(s.subject);
+  document.getElementById('detail-hero-bg').style.background=`linear-gradient(135deg,${color}33,${color}11)`;
+  document.getElementById('detail-name').textContent=s.name;
+  document.getElementById('detail-sub').textContent=s.subject+(s.class?' · '+s.class:'');
+  const days=Math.floor((new Date()-new Date(s.joinDate))/86400000);
+  const streak=calcStreak(id);
+  const totalPaid=s.fees?.filter(f=>f.paid).reduce((a,f)=>a+(f.amount||0),0)||0;
+  document.getElementById('detail-mini-stats').innerHTML=`
+    <div class="glass-card silk-border rounded-[18px] p-4 flex flex-col items-center text-center shadow-sm">
+      <span class="text-[10px] uppercase tracking-widest text-outline mb-1">Joined</span>
+      <span class="font-bold text-sm">${s.joinDate.slice(5).replace('-','/')}</span>
+      <span class="text-[10px] text-outline">${days}d ago</span>
+    </div>
+    <div class="glass-card silk-border rounded-[18px] p-4 flex flex-col items-center text-center shadow-sm" style="border-top:2px solid #4edea3">
+      <span class="text-[10px] uppercase tracking-widest text-outline mb-1">Att.</span>
+      <span class="font-black text-tertiary text-xl" id="mini-att-pct">—</span>
+    </div>
+    <div class="glass-card silk-border rounded-[18px] p-4 flex flex-col items-center text-center shadow-sm">
+      <span class="text-[10px] uppercase tracking-widest text-outline mb-1">Paid</span>
+      <span class="font-black text-primary text-sm">Rs.${totalPaid}</span>
+    </div>`;
+  document.getElementById('detail-bio').innerHTML=`
+    <div class="flex justify-between py-2.5"><span class="text-xs text-on-surface-variant">Parent</span><span class="text-sm font-semibold">${s.parent||'—'}</span></div>
+    <div class="flex justify-between py-2.5"><span class="text-xs text-on-surface-variant">Phone</span><a href="tel:${s.phone}" class="text-sm font-semibold text-primary">${s.phone||'—'}</a></div>
+    <div class="flex justify-between py-2.5"><span class="text-xs text-on-surface-variant">Monthly Fee</span><span class="text-sm font-black text-primary">Rs.${s.feeAmount}</span></div>
+    <div class="flex justify-between py-2.5"><span class="text-xs text-on-surface-variant">🔥 Streak</span><span class="text-sm font-black" style="color:#F59E0B">${streak} days</span></div>`;
+  document.getElementById('detail-call-btn').onclick=()=>{ if(s.phone) window.location.href='tel:'+s.phone; else showToast('No phone number'); };
+  document.getElementById('detail-sms-btn').onclick=()=>{ if(s.phone) window.location.href=`sms:${s.phone}?body=Hello, this is regarding ${s.name}'s tuition classes.`; else showToast('No phone number'); };
+  renderDetailHeatmap(id); renderDetailFees(s);
+  showScreen('screen-detail');
+}
+function renderDetailHeatmap(id){
+  const now=new Date(),year=now.getFullYear(),month=now.getMonth();
+  const dim=new Date(year,month+1,0).getDate(),fd=new Date(year,month,1).getDay(),tod=now.getDate();
+  let present=0,total=0,html='';
+  for(let i=0;i<fd;i++) html+=`<div class="hm-dot" style="background:transparent"></div>`;
+  for(let d=1;d<=dim;d++){
+    const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const st=attendance[ds]?.[id];
+    let bg='#e1e3e4',col='#767586';
+    if(d>tod){bg='transparent';col='#c7c4d7';}
+    else if(st==='present'){bg='#4edea3';col='#002113';present++;total++;}
+    else if(st==='absent'){bg='rgba(186,26,26,.2)';col='#93000a';total++;}
+    html+=`<div class="hm-dot" style="background:${bg};color:${col}">${d}</div>`;
+  }
+  document.getElementById('detail-heatmap').innerHTML=html;
+  const pct=total>0?Math.round(present/total*100):0;
+  document.getElementById('detail-att-pct').textContent=pct+'%';
+  document.getElementById('detail-att-bar').style.width=pct+'%';
+  const m=document.getElementById('mini-att-pct'); if(m) m.textContent=pct+'%';
+}
+function renderDetailFees(s){
+  const box=document.getElementById('detail-fees');
+  if(!s.fees?.length){ box.innerHTML=`<p class="text-sm text-on-surface-variant text-center py-4">No payments recorded yet.</p>`; return; }
+  box.innerHTML=s.fees.sort((a,b)=>b.month.localeCompare(a.month)).map(f=>`
+    <div class="relative bg-surface-container-lowest rounded-[18px] p-4 shadow-sm silk-border">
+      <div class="absolute -left-[29px] top-4 w-5 h-5 rounded-full bg-tertiary flex items-center justify-center text-white">
+        <span class="material-symbols-outlined" style="font-size:11px;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">check</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <div><p class="font-bold text-sm">${f.month}</p><p class="text-xs text-on-surface-variant">${f.paidDate?'Paid '+f.paidDate:''}</p></div>
+        <span class="font-black text-primary">Rs.${f.amount}</span>
+      </div>
+    </div>`).join('');
+}
+function calcStreak(id){
+  let s=0; const now=new Date();
+  for(let i=0;i<60;i++){
+    const d=new Date(now); d.setDate(d.getDate()-i);
+    if(attendance[d.toISOString().slice(0,10)]?.[id]==='present') s++;
+    else if(i>0) break;
+  }
+  return s;
+}
+function deleteStudent(){
+  if(!confirm('Delete this student?')) return;
+  students=students.filter(s=>s.id!==currentStudentId); save();
+  showToast('Student removed'); showScreen('screen-students');
+}
+
+// ── REPORT ────────────────────────────────────────────────────────
+function openReportModal(){
+  const s = students.find(st => st.id === currentStudentId);
+  if(!s) return;
+  const mKey = monthKey();
+  document.getElementById('report-month').textContent = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+  
+  // Calc attendance for this month
+  const now = new Date(), year = now.getFullYear(), month = now.getMonth();
+  const dim = new Date(year, month + 1, 0).getDate();
+  let present = 0, total = 0;
+  for(let d = 1; d <= dim; d++){
+    const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const st = attendance[ds]?.[s.id];
+    if(st === 'present') present++;
+    if(st) total++;
+  }
+  const attPct = total > 0 ? Math.round(present / total * 100) : 0;
+  const feePaid = s.fees?.find(f => f.month === mKey && f.paid);
+
+  document.getElementById('report-content').innerHTML = `
+    <div class="bg-surface-container-low dark:bg-[#2c2c3a] p-5 rounded-2xl">
+      <p class="text-[10px] font-bold text-outline dark:text-slate-500 uppercase tracking-widest mb-1">Student</p>
+      <p class="font-bold text-lg text-on-surface dark:text-slate-100">${s.name}</p>
+      <p class="text-xs text-on-surface-variant dark:text-slate-400">${s.subject} · ${s.class || 'N/A'}</p>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-surface-container-low dark:bg-[#2c2c3a] p-4 rounded-2xl text-center">
+        <p class="text-[10px] font-bold text-outline dark:text-slate-500 uppercase tracking-widest mb-1">Attendance</p>
+        <p class="text-3xl font-black text-primary dark:text-primary-fixed-dim">${attPct}%</p>
+        <p class="text-[10px] text-on-surface-variant dark:text-slate-400 mt-1">${present}/${total} Days</p>
+      </div>
+      <div class="bg-surface-container-low dark:bg-[#2c2c3a] p-4 rounded-2xl text-center">
+        <p class="text-[10px] font-bold text-outline dark:text-slate-500 uppercase tracking-widest mb-1">Fee Status</p>
+        <p class="text-xl font-black ${feePaid ? 'text-tertiary dark:text-tertiary-fixed-dim' : 'text-error'}">${feePaid ? 'PAID' : 'DUE'}</p>
+        <p class="text-[10px] text-on-surface-variant dark:text-slate-400 mt-1">Rs.${s.feeAmount}</p>
+      </div>
+    </div>
+
+    <div class="bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-white/5 p-4 rounded-2xl">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim text-sm">auto_awesome</span>
+        <p class="text-xs font-bold text-primary dark:text-primary-fixed-dim uppercase tracking-widest">Performance Insights</p>
+      </div>
+      <p class="text-xs text-on-surface-variant dark:text-slate-300 leading-relaxed">
+        ${attPct >= 90 ? 'Excellent attendance! The student is very consistent.' : 
+          attPct >= 75 ? 'Good attendance. Keep maintaining this regularity.' : 
+          'Attendance could be improved. Consistency is key to better learning.'}
+      </p>
+    </div>
+  `;
+  document.getElementById('report-modal').style.display = 'flex';
+}
+function closeReportModal(){ document.getElementById('report-modal').style.display = 'none'; }
+
+// ── PAYMENT ──────────────────────────────────────────────────────
+function openPayModal(){
+  document.getElementById('pay-month').value=monthKey();
+  const s=students.find(st=>st.id===currentStudentId);
+  document.getElementById('pay-amount').value=s?s.feeAmount:'';
+  document.getElementById('pay-modal').style.display='flex';
+}
+function closePayModal(){ document.getElementById('pay-modal').style.display='none'; }
+function savePayment(){
+  const month=document.getElementById('pay-month').value;
+  const amount=parseFloat(document.getElementById('pay-amount').value);
+  if(!month||!amount){ showToast('⚠️ Fill payment details'); return; }
+  const s=students.find(st=>st.id===currentStudentId); if(!s) return;
+  s.fees=(s.fees||[]).filter(f=>f.month!==month);
+  s.fees.push({month,amount,paid:true,paidDate:todayStr()});
+  save(); closePayModal(); renderDetailFees(s); renderDashboard(); renderFees();
+  showToast('✅ Payment recorded!');
+}
+
+// ── ATTENDANCE ───────────────────────────────────────────────────
+function buildDateRibbon(){
+  const now=new Date(),days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html='';
+  for(let i=-2;i<=2;i++){
+    const d=new Date(now); d.setDate(d.getDate()+i);
+    const ds=d.toISOString().slice(0,10),isToday=i===0,sel=ds===selectedDate;
+    if(isToday){
+      html+=`<div class="shrink-0 flex flex-col items-center justify-center w-20 h-28 rounded-[20px] bg-primary text-white shadow-lg shadow-primary/20 cursor-pointer" onclick="selectDateRibbon('${ds}',this)">
+        <span class="text-[11px] font-black uppercase tracking-widest opacity-80">${days[d.getDay()]}</span>
+        <span class="text-3xl font-black">${d.getDate()}</span>
+        <span class="text-[9px] font-medium opacity-70">TODAY</span></div>`;
+    } else {
+      html+=`<div class="shrink-0 flex flex-col items-center justify-center w-14 h-20 rounded-[16px] ${sel?'bg-primary text-white':'bg-surface-container-low text-on-surface-variant'} cursor-pointer transition-all" onclick="selectDateRibbon('${ds}',this)">
+        <span class="text-[9px] font-bold uppercase tracking-widest opacity-60">${days[d.getDay()]}</span>
+        <span class="text-lg font-bold">${d.getDate()}</span></div>`;
+    }
+  }
+  document.getElementById('date-ribbon').innerHTML=html;
+}
+function selectDateRibbon(ds){
+  selectedDate=ds;
+  buildDateRibbon(); renderAttendance();
+}
+function renderAttendance(){
+  document.getElementById('att-session-label').textContent='Session: '+selectedDate;
+  const saved=attendance[selectedDate]||{}; tempAttendance={...saved};
+  const list=document.getElementById('att-list');
+  if(!students.length){
+    list.innerHTML=`<div class="text-center py-16 text-on-surface-variant"><span class="material-symbols-outlined text-5xl block mb-2 opacity-30">calendar_month</span><p class="text-sm">No students yet.</p></div>`;
+    return;
+  }
+  list.innerHTML=students.map(s=>{
+    const status=tempAttendance[s.id]||'';
+    const color=subColor(s.subject);
+    let rowBg='bg-surface-container-lowest';
+    if(status==='present') rowBg='bg-tertiary-fixed-dim/20 border border-tertiary-fixed-dim/30';
+    if(status==='absent') rowBg='bg-error-container border border-error/10';
+    return `<div class="relative rounded-[24px] p-4 flex items-center gap-4 transition-all shadow-sm ${rowBg}" id="att-row-${s.id}">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-sm text-white shrink-0" style="background:${color}">${initials(s.name)}</div>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-bold text-sm ${status==='absent'?'text-on-error-container':status==='present'?'text-on-tertiary-fixed-variant':'text-on-surface'}">${s.name}</h3>
+        <p class="text-xs text-on-surface-variant">${s.subject}${s.class?' · '+s.class:''}</p>
+      </div>
+      <div class="relative w-24 h-10 rounded-full p-1 flex items-center cursor-pointer shrink-0 ${status==='present'?'bg-tertiary-fixed-dim':status==='absent'?'bg-error':'bg-surface-container'}" onclick="toggleAtt('${s.id}')">
+        <div class="absolute inset-0 flex justify-between px-3 items-center pointer-events-none ${status?'text-white':'opacity-40'}">
+          <span class="material-symbols-outlined text-[15px]">close</span>
+          <span class="material-symbols-outlined text-[15px]" style="${status==='present'?'font-variation-settings:&quot;FILL&quot; 1,&quot;wght&quot; 400,&quot;GRAD&quot; 0,&quot;opsz&quot; 24':''}">${status==='present'?'done_all':'check'}</span>
+        </div>
+        <div class="w-8 h-8 bg-white rounded-full shadow-md transition-transform duration-300 flex items-center justify-center ${status==='present'?'translate-x-14':status==='absent'?'translate-x-0':'translate-x-7'}">
+          <span class="material-symbols-outlined text-[16px] ${status==='present'?'text-tertiary':status==='absent'?'text-error':'text-primary'}">${status==='present'?'done_all':status==='absent'?'cancel':'drag_indicator'}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleAtt(id){
+  const curr=tempAttendance[id]||'';
+  const next=curr==='present'?'absent':curr==='absent'?'':''+'present';
+  tempAttendance[id]=next||'present';
+  renderAttendance();
+}
+function markAllPresent(){ students.forEach(s=>{ tempAttendance[s.id]='present'; }); renderAttendance(); }
+function saveAttendance(){
+  attendance[selectedDate]={...tempAttendance}; save();
+  showToast('✅ Attendance saved!'); renderDashboard();
+}
+
+// ── FEES ─────────────────────────────────────────────────────────
+function setFeeTab(tab,el){
+  feeTab=tab;
+  document.querySelectorAll('.fee-tab-btn').forEach(b=>{b.classList.remove('active-fee-tab');b.classList.add('text-slate-500');});
+  el.classList.add('active-fee-tab'); el.classList.remove('text-slate-500');
+  renderFees();
+}
+function renderFees(){
+  const mKey=monthKey();
+  let collected=0,due=0;
+  const list=document.getElementById('fee-list');
+  if(!students.length){
+    list.innerHTML=`<div class="text-center py-16 text-on-surface-variant"><span class="material-symbols-outlined text-5xl block mb-2 opacity-30">payments</span><p class="text-sm">No students yet.</p></div>`;
+    return;
+  }
+  // Overdue section
+  const overdueCards=[],nearingCards=[],normalCards=[];
+  students.forEach(s=>{
+    const feeEntry=s.fees?.find(f=>f.month===mKey&&f.paid);
+    const isPaid=!!feeEntry;
+    if(isPaid) collected+=feeEntry.amount||s.feeAmount; else due+=s.feeAmount;
+    if(feeTab==='paid'&&!isPaid) return;
+    if(feeTab==='due'&&isPaid) return;
+    const days=Math.floor((new Date()-new Date(s.joinDate))/86400000);
+    const isOverdue=!isPaid&&days>=30;
+    const isNearing=!isPaid&&days>=25&&days<30;
+    const color=subColor(s.subject);
+    if(isOverdue){
+      overdueCards.push(`<div class="crimson-flare bg-surface-container-lowest rounded-[22px] p-5 flex flex-col justify-between cursor-pointer" onclick="openDetail('${s.id}')">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[10px] uppercase tracking-widest text-error font-bold">${days} Days Overdue</span>
+            <h4 class="text-xl font-black text-on-surface mt-1">${s.name}</h4>
+            <p class="text-sm text-on-surface-variant">${s.subject}${s.class?' · '+s.class:''}</p>
+          </div>
+          <p class="text-2xl font-black text-on-surface">Rs.${s.feeAmount}</p>
+        </div>
+        <div class="mt-5 flex items-center justify-between">
+          <div class="flex items-center gap-1 text-error"><span class="material-symbols-outlined text-sm">warning</span><span class="text-xs font-bold">Debt-Pulse Active</span></div>
+          <button onclick="event.stopPropagation();quickPay('${s.id}')" class="silk-gradient text-white px-5 py-2.5 rounded-[12px] text-sm font-bold shadow-lg shadow-indigo-100 active:scale-95 transition-transform">Collect Now</button>
+        </div>
+      </div>`);
+    } else if(isNearing){
+      nearingCards.push(`<div class="bg-surface-container-low rounded-[20px] p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-high transition-all" onclick="openDetail('${s.id}')">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-sm"><span class="material-symbols-outlined">schedule</span></div>
+          <div><h4 class="font-bold text-sm">${s.name}</h4><p class="text-xs text-on-surface-variant">${s.subject}</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right"><p class="text-[10px] font-bold text-primary uppercase tracking-widest">Due in ${30-days}d</p><p class="font-black">Rs.${s.feeAmount}</p></div>
+          <button onclick="event.stopPropagation();quickPay('${s.id}')" class="p-2.5 rounded-full border border-outline-variant hover:bg-white transition-colors"><span class="material-symbols-outlined text-on-surface-variant text-sm">send</span></button>
+        </div>
+      </div>`);
+    } else {
+      normalCards.push(`<div class="bg-surface-container-low rounded-[20px] p-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-high transition-all" onclick="openDetail('${s.id}')">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full flex items-center justify-center font-black text-sm text-white" style="background:${color}">${initials(s.name)}</div>
+          <div><h4 class="font-bold text-sm">${s.name}</h4><p class="text-xs text-on-surface-variant">${s.subject} · ${mKey}</p></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="text-right">
+            <p class="font-black">Rs.${s.feeAmount}</p>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isPaid?'bg-tertiary-fixed-dim/30 text-on-tertiary-fixed-variant':'bg-error-container/50 text-error'}">${isPaid?'✓ Paid':'Due'}</span>
+          </div>
+          ${!isPaid?`<button onclick="event.stopPropagation();quickPay('${s.id}')" class="p-2 rounded-full bg-tertiary text-white active:scale-95 transition-transform"><span class="material-symbols-outlined text-sm">payments</span></button>`:''}
+        </div>
+      </div>`);
+    }
+  });
+  let html='';
+  if(overdueCards.length){
+    html+=`<div class="flex items-center justify-between mb-2"><h3 class="text-[10px] font-bold uppercase tracking-widest text-outline">Critical Recovery</h3><span class="text-[10px] font-bold text-error bg-error-container/30 px-3 py-1 rounded-full">${overdueCards.length} High Priority</span></div>`;
+    html+=`<div class="grid grid-cols-1 gap-4 mb-4">${overdueCards.join('')}</div>`;
+  }
+  if(nearingCards.length){
+    html+=`<div class="flex items-center justify-between mb-2 mt-2"><h3 class="text-[10px] font-bold uppercase tracking-widest text-outline">Nearing Due Date</h3><span class="text-[10px] font-bold text-primary bg-primary-fixed/30 px-3 py-1 rounded-full">Next 5 Days</span></div>`;
+    html+=`<div class="space-y-3 mb-4">${nearingCards.join('')}</div>`;
+  }
+  if(normalCards.length) html+=`<div class="space-y-3">${normalCards.join('')}</div>`;
+  list.innerHTML=html||`<div class="text-center py-12 text-on-surface-variant"><span class="material-symbols-outlined text-5xl block mb-2 opacity-30">check_circle</span><p class="text-sm">All clear in this category!</p></div>`;
+  document.getElementById('fee-collected-label').textContent='Collected: Rs.'+collected;
+  document.getElementById('fee-due-label').textContent='Due: Rs.'+due;
+}
+function quickPay(id){ currentStudentId=id; openPayModal(); }
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.transform='translateX(-50%) translateY(0)';
+  setTimeout(()=>t.style.transform='translateX(-50%) translateY(-80px)',2500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+initDarkMode();
+setGreeting();
+selectedDate=todayStr();
+renderDashboard();
+buildFilterChips();
+</script>
+</body>
+</html>
